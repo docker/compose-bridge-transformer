@@ -1,0 +1,31 @@
+{{ $project := .name }}
+{{ range $name, $service := .services }}
+{{ if $service.ports }}
+---
+#! {{ $name }}-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    com.docker.compose.project: {{ $project }}
+    com.docker.compose.service: {{ $name }}
+spec:
+  type: LoadBalancer
+  selector:
+    com.docker.compose.project: {{ $project }}
+    com.docker.compose.service: {{ $name }}
+  ports:
+{{ range $port := $service.ports}}
+    - name: {{ if $port.name }}{{ $port.name }}{{ else }}{{ $name }}-{{ $port.published }}{{ end }}
+      port: {{ $port.published }}
+      protocol:  {{ $port.protocol | uppercase }}
+      targetPort: {{ $name }}-{{ $port.target }}
+    - name: {{ $name }}-{{ $port.target }}
+      port: {{ $port.target }}
+      targetPort: {{ $name }}-{{ $port.target }}
+{{ end }}
+
+{{ end }}
+{{ end }}

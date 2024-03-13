@@ -1,0 +1,109 @@
+{{ $project := .name }}
+{{ range $name, $service := .services }}
+---
+#! {{ $name }}-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    com.docker.compose.project: {{ $project }}
+    com.docker.compose.service: {{ $name }}
+spec:
+  replicas: {{ if $service.scale }} {{ $service.scale }} {{ else }} 1 {{ end }}
+  selector:
+    matchLabels:
+      com.docker.compose.project: {{ $project }}
+      com.docker.compose.service: {{$name}}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        com.docker.compose.project: {{ $project }}
+        com.docker.compose.service: {{ $name }}
+{{ range $name, $config := $service.networks}}
+        com.docker.compose.network.{{ $name }}: "true"
+{{ end }}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: {{ if $service.container_name }}{{ $service.container_name }}{{ else }}{{ $name }}{{ end }}
+          image: {{ if $service.image }}{{ $service.image }}{{ else }}{{ $project }}-{{ $name }}{{ end }}
+          imagePullPolicy: {{ if $service.pull_policy }}{{ $service.pull_policy | title }}{{ else }}IfNotPresent{{ end }}
+{{ if $service.command }}
+          command: {{ $service.command }}{{ end }}
+{{ if $service.environment }}
+          env:
+{{ range $key, $value := $service.environment }}
+            - name: {{ $key }}
+              value: "{{ $value }}"{{ end }}
+{{ end }}
+
+{{ if $service.healthcheck }}
+          livenessProbe:
+            exec:
+              command: {{ $service.healthcheck.test | truncate 1 }}
+{{ if $service.healthcheck.interval }}
+            periodSeconds: {{ $service.healthcheck.interval | seconds }}{{ end }}
+{{ if $service.healthcheck.start_period }}
+            initialDelaySeconds: {{ $service.healthcheck.start_period | seconds }}{{ end }}
+{{ if $service.healthcheck.timeout }}
+            timeoutSeconds: {{ $service.healthcheck.timeout | seconds }}{{ end }}
+{{ if $service.healthcheck.retries }}
+            failureThreshold: {{ $service.healthcheck.retries }}{{ end }}
+{{ end }}
+
+
+{{ if $service.expose }}
+          ports:
+    {{ range $port := $service.expose }}
+            - name: {{ $name }}-{{ $port }}
+              containerPort: {{ $port }}
+    {{ end }}
+{{ end }}
+
+{{ if or $service.volumes $service.secrets }}
+          volumeMounts:
+{{ range $volume := $service.volumes }}
+            - name: {{ $volume.target | safe }}
+              mountPath: {{ $volume.target }}
+{{ if $volume.read_only }}
+              readOnly: true{{ end }}
+{{ end }}
+          {{ range $secret := $service.secrets }}
+            - name: {{ $secret.target | safe }}
+              mountPath: {{ $secret.target | dir }}
+              readOnly: true
+          {{ end }}
+{{ end }}
+
+{{ if or $service.volumes $service.secrets }}
+      volumes:
+{{ range $secret := $service.secrets }}
+        - name: {{ $secret.target | safe }}
+          secret:
+            secretName: {{ $secret.source }}
+{{ end }}
+
+{{ range $volume := $service.volumes }}
+        - name: {{ $volume.target | safe }}
+{{ if eq $volume.type "volume" }}
+          persistentVolumeClaim:
+            claimName: {{$name}}-{{ $volume.source | safe }}
+{{ else if eq $volume.type "bind" }}
+          hostPath:
+            path: {{ $volume.source }}
+{{ else if eq $volume.type "tmpfs" }}
+          emptyDir:
+{{ if $volume.tmpfs.size }}
+            sizeLimit: {{ $volume.tmpfs.size }}{{ end }}
+{{ end }}
+
+{{ if $volume.read_only }}
+          readOnly: true{{ end }}
+
+{{ end }}
+{{ end }}
+{{ end }}
