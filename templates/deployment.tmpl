@@ -27,7 +27,6 @@ spec:
         com.docker.compose.network.{{ $name }}: "true"
 {{ end }}
     spec:
-      automountServiceAccountToken: false
       containers:
         - name: {{ if $service.container_name }}{{ $service.container_name }}{{ else }}{{ $name }}{{ end }}
           image: {{ if $service.image }}{{ $service.image }}{{ else }}{{ $project }}-{{ $name }}{{ end }}
@@ -74,7 +73,8 @@ spec:
 {{ end }}
           {{ range $secret := $service.secrets }}
             - name: {{ $secret.target | safe }}
-              mountPath: {{ $secret.target | dir }}
+              mountPath: {{ $secret.target }}
+              subPath: {{ $secret.source }}
               readOnly: true
           {{ end }}
 {{ end }}
@@ -85,6 +85,9 @@ spec:
         - name: {{ $secret.target | safe }}
           secret:
             secretName: {{ $secret.source }}
+            items:
+              - key: {{ $secret.source }}
+                path: {{ $secret.source }}
 {{ end }}
 
 {{ range $volume := $service.volumes }}
