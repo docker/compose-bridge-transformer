@@ -144,6 +144,13 @@ var helpers = map[string]any{
 	"truncate": func(n int, s []any) []any {
 		return s[n:]
 	},
+	"join": func(sep string, s []any) string {
+		var ss []string
+		for _, a := range s {
+			ss = append(ss, a.(string))
+		}
+		return strings.Join(ss, sep)
+	},
 	"base64": func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	},

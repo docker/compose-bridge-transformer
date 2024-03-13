@@ -44,7 +44,14 @@ spec:
 {{ if $service.healthcheck }}
           livenessProbe:
             exec:
+{{ if eq "CMD-SHELL" (index $service.healthcheck.test 0)}}
+              command:
+                - /bin/sh
+                - -c
+                - {{ $service.healthcheck.test | truncate 1 | join " "}}
+{{ else }}
               command: {{ $service.healthcheck.test | truncate 1 }}
+{{ end }}
 {{ if $service.healthcheck.interval }}
             periodSeconds: {{ $service.healthcheck.interval | seconds }}{{ end }}
 {{ if $service.healthcheck.start_period }}
