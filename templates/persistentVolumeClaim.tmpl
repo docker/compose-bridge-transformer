@@ -1,3 +1,4 @@
+{{ $project := .name }}
 {{ range $name, $service := .services }}
 {{ range $volume := $service.volumes }}
 ---
@@ -6,10 +7,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  name: {{ $name }}-{{ $volume.source | safe }}
+  namespace: {{ $project }}
   labels:
     com.docker.compose.service: {{ $name }}
     com.docker.compose.volume: {{ $volume.source }}
-  name: {{ $name }}-{{ $volume.source | safe }}
 spec:
   accessModes:
     # TODO would need to check which services use this volume
