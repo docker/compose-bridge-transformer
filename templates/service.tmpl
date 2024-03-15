@@ -23,9 +23,6 @@ spec:
       port: {{ $port.published }}
       protocol:  {{ $port.protocol | uppercase }}
       targetPort: {{ $name }}-{{ $port.target }}
-    - name: {{ $name }}-{{ $port.target }}
-      port: {{ $port.target }}
-      targetPort: {{ $name }}-{{ $port.target }}
 {{ end }}
 
 {{ end }}
