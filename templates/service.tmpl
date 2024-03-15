@@ -7,7 +7,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $name }}
+  name: {{ $name }}-published
   namespace: {{ $project }}
   labels:
     com.docker.compose.project: {{ $project }}
