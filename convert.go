@@ -46,6 +46,17 @@ func Convert(model map[string]any, templateDir string, out string) error {
 	}
 	for _, entry := range dir {
 		f := filepath.Join(templateDir, entry.Name())
+		newOut := filepath.Join(out, entry.Name())
+		if entry.IsDir() {
+			err := os.Mkdir(newOut, 0o700)
+			if err != nil {
+				return err
+			}
+			if err := Convert(model, f, newOut); err != nil {
+				return err
+			}
+			continue
+		}
 		if applyTemplate(model, f, out); err != nil {
 			return err
 		}
@@ -54,6 +65,10 @@ func Convert(model map[string]any, templateDir string, out string) error {
 }
 
 func applyTemplate(model map[string]any, file string, output string) error {
+	helmMode := false
+	if len(os.Args) > 1 && "helm" == os.Args[1] {
+		helmMode = true
+	}
 	tmpl, err := template.New(filepath.Base(file)).Funcs(helpers).ParseFiles(file)
 	if err != nil {
 		ExitError("cannot parse template "+file, err)
@@ -85,10 +100,24 @@ func applyTemplate(model map[string]any, file string, output string) error {
 		fileOut := fileComment(&doc)
 		if fileOut != "" {
 			f := filepath.Join(output, fileOut)
-			os.WriteFile(f, out.Bytes(), 0o700)
+			var cleanOut []byte
+			//FIXME this a hack to fix the encoding issue with helm templates which are not valid yaml files
+			if helmMode {
+				cleanOut = bytes.ReplaceAll(out.Bytes(), []byte("{? {"), []byte("{{ "))
+				cleanOut = bytes.ReplaceAll(cleanOut, []byte(": ''} : ''}"), []byte(" }}"))
+			} else {
+				cleanOut = out.Bytes()
+			}
+			os.WriteFile(f, cleanOut, 0o700)
 			fmt.Printf("Kubernetes resource \033[32;1m%s\033[0;m created\n", fileOut)
 		} else {
-			fmt.Println(out.String())
+			cleanOut := out.String()
+			//FIXME this a hack to fix the encoding issue with helm templates which are not valid yaml files
+			if helmMode {
+				cleanOut = strings.ReplaceAll(cleanOut, "{? {", "{{ ")
+				cleanOut = strings.ReplaceAll(cleanOut, ": ''} : ''}", " }}")
+			}
+			fmt.Println(cleanOut)
 		}
 	}
 	return nil

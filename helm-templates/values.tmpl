@@ -1,0 +1,13 @@
+{{ $project := .name }}
+#! values.yaml
+# Namespace
+namespace: {{ $project }}
+# Services variables
+{{ range $name, $service := .services }}
+{{ $name }}:
+  image: {{ if $service.image }}{{ $service.image }}{{ else }}{{ $project }}-{{ $name }}{{ end }}
+  imagePullPolicy: {{ if $service.pull_policy }}{{ $service.pull_policy | title }}{{ else }}IfNotPresent{{ end }}
+
+{{ end }}
+
+# You can apply the same logic to loop on networks, volumes, secrets and configs...

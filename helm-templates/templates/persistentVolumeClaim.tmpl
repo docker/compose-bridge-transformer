@@ -1,0 +1,25 @@
+{{ range $name, $service := .services }}
+{{ range $volume := $service.volumes }}
+---
+#! {{ $name }}-{{ $volume.source }}-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    com.docker.compose.service: {{ $name }}
+    com.docker.compose.volume: {{ $volume.source }}
+    app.kubernetes.io/managed-by: Helm
+  name: {{ $name }}-{{ $volume.source | safe }}
+  namespace: {{`{{`}} .Values.namespace {{`}}`}}
+spec:
+  accessModes:
+    # TODO would need to check which services use this volume
+    - {{ if $volume.read_only }}ReadOnlyMany{{ else }}ReadWriteOnce{{ end }}
+  volumeMode: Filesystem
+  storageClassName: "hostpath"  # see docker/desktop-storage-provisioner
+  resources:
+    requests:
+      storage: 100Mi
+{{ end }}
+{{ end }}
