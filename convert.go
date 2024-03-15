@@ -133,7 +133,7 @@ func fileComment(node *yaml.Node) string {
 	for _, s := range strings.Split(node.HeadComment, "\n") {
 		s := strings.TrimSpace(s)
 		if strings.HasPrefix(s, "#! ") {
-			return s[2:]
+			return s[3:]
 		}
 	}
 	return ""
