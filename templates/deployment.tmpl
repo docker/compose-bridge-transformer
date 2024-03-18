@@ -4,7 +4,11 @@
 #! {{ $name }}-deployment.yaml
 # Generated code, do not edit
 apiVersion: apps/v1
+{{ if eq $service.deploy.mode "global" }}
+kind: DaemonSet
+{{ else }}
 kind: Deployment
+{{ end }}
 metadata:
   name: {{ $name }}
   namespace: {{ $project }}
