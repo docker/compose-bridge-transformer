@@ -7,7 +7,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $name }}
-  namespace: {{`{{`}} .Values.namespace {{`}}`}}
+  namespace: {{ helmValue ".Values.namespace" }}
   labels:
     com.docker.compose.project: {{ $project }}
     com.docker.compose.service: {{ $name }}
@@ -31,8 +31,8 @@ spec:
     spec:
       containers:
         - name: {{ if $service.container_name }}{{ $service.container_name }}{{ else }}{{ $name }}{{ end }}
-          image: {{`{{`}} .Values.{{ $name }}.image {{`}}`}}
-          imagePullPolicy: {{ "{{" }} .Values.{{ $name }}.imagePullPolicy {{ "}}" }}
+          image: {{ helmValue ".Values.%s.image" $name }}
+          imagePullPolicy: {{ helmValue ".Values.%s.imagePullPolicy" $name }}
 {{ if $service.command }}
           command: {{ $service.command }}{{ end }}
 {{ if $service.environment }}

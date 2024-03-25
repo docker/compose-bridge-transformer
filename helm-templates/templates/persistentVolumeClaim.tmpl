@@ -11,7 +11,7 @@ metadata:
     com.docker.compose.volume: {{ $volume.source }}
     app.kubernetes.io/managed-by: Helm
   name: {{ $name }}-{{ $volume.source | safe }}
-  namespace: {{`{{`}} .Values.namespace {{`}}`}}
+  namespace: {{ helmValue ".Values.namespace" }}
 spec:
   accessModes:
     # TODO would need to check which services use this volume
