@@ -10,9 +10,9 @@ metadata:
   namespace: {{ $project }}
   labels:
     com.docker.compose.project: {{ $project }}
-  data:
+data:
 {{ range $name, $config := .configs }}
-    {{ $name }}: |
-{{ indent $config.content 6 }}
+  {{ $name }}: |
+{{ indent $config.content 4 }}
 {{ end }}
 {{ end }}

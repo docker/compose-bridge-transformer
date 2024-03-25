@@ -75,7 +75,7 @@ spec:
     {{ end }}
 {{ end }}
 
-{{ if or $service.volumes $service.secrets }}
+{{ if or $service.volumes $service.secrets $service.configs }}
           volumeMounts:
 {{ range $volume := $service.volumes }}
             - name: {{ $volume.target | safe }}
@@ -89,9 +89,15 @@ spec:
               subPath: {{ $secret.source }}
               readOnly: true
           {{ end }}
+          {{ range $config := $service.configs }}
+            - name: {{ $config.target | safe }}
+              mountPath: {{ $config.target }}
+              subPath: {{ $config.source }}
+              readOnly: true
+          {{ end }}
 {{ end }}
 
-{{ if or $service.volumes $service.secrets }}
+{{ if or $service.volumes $service.secrets $service.configs }}
       volumes:
 {{ range $secret := $service.secrets }}
         - name: {{ $secret.target | safe }}
@@ -100,6 +106,15 @@ spec:
             items:
               - key: {{ $secret.source }}
                 path: {{ $secret.source }}
+{{ end }}
+
+{{ range $config := $service.configs }}
+        - name: {{ $config.target | safe }}
+          configMap:
+            name: {{ $project }}
+            items:
+              - key: {{ $config.source }}
+                path: {{ $config.source }}
 {{ end }}
 
 {{ range $volume := $service.volumes }}
