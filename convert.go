@@ -81,8 +81,6 @@ func applyTemplate(model map[string]any, file string, output string) error {
 		ExitError("cannot execute template "+file, err)
 	}
 
-	fmt.Println(buff.String())
-
 	decoder := yaml.NewDecoder(&buff)
 	for {
 		var doc yaml.Node
