@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"errors"
@@ -79,6 +80,8 @@ func applyTemplate(model map[string]any, file string, output string) error {
 	if err != nil {
 		ExitError("cannot execute template "+file, err)
 	}
+
+	fmt.Println(buff.String())
 
 	decoder := yaml.NewDecoder(&buff)
 	for {
@@ -195,6 +198,17 @@ var helpers = map[string]any{
 	},
 	"dir": func(s string) string {
 		return filepath.Dir(s)
+	},
+	"indent": func(s string, indent int) string {
+		indentation := strings.Repeat(" ", indent)
+		lines := strings.Builder{}
+		sc := bufio.NewScanner(strings.NewReader(s))
+		for sc.Scan() {
+			lines.WriteString(indentation)
+			lines.WriteString(sc.Text())
+			lines.WriteString("\n")
+		}
+		return lines.String()
 	},
 }
 
