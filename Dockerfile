@@ -3,7 +3,9 @@ WORKDIR $GOPATH/src/github.com/docker/transform
 COPY .. .
 RUN go build -o /go/bin/transform
 
-FROM scratch
+FROM scratch as transformer
 COPY --from=builder /go/bin/transform /transform
-COPY templates /templates
 CMD ["/transform"]
+
+FROM transformer
+COPY templates /templates
