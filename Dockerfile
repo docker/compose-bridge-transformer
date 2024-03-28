@@ -1,4 +1,4 @@
-FROM golang:1.21 AS builder
+FROM --platform=${BUILDPLATFORM} golang:1.21 AS builder
 WORKDIR $GOPATH/src/github.com/docker/transform
 COPY .. .
 RUN go build -o /go/bin/transform
