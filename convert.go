@@ -196,6 +196,15 @@ var helpers = map[string]any{
 		}
 		return lines.String()
 	},
+	"map": func(s string, rules ...string) string {
+		for _, rule := range rules {
+			before, after, _ := strings.Cut(rule, "->")
+			if s == strings.TrimSpace(before) {
+				return strings.TrimSpace(after)
+			}
+		}
+		return s
+	},
 }
 
 func ExitError(message string, err error) {
