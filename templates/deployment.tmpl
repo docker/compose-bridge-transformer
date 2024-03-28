@@ -32,17 +32,46 @@ spec:
         com.docker.compose.network.{{ $name }}: "true"
 {{ end }}
     spec:
+{{ if $service.restart }}
+      restartPolicy : {{ map $service.restart "always->Always" "on-failure->OnFailure" "no->Never"}}
+{{ end }}
       containers:
         - name: {{ if $service.container_name }}{{ $service.container_name }}{{ else }}{{ $name }}{{ end }}
           image: {{ if $service.image }}{{ $service.image }}{{ else }}{{ $project }}-{{ $name }}{{ end }}
           imagePullPolicy: {{ if $service.pull_policy }}{{ $service.pull_policy | title }}{{ else }}IfNotPresent{{ end }}
 {{ if $service.command }}
           command: {{ $service.command }}{{ end }}
+{{ if $service.working_dir }}
+          workingDir: {{ $service.working_dir }}{{ end }}
 {{ if $service.environment }}
           env:
 {{ range $key, $value := $service.environment }}
             - name: {{ $key }}
               value: "{{ $value }}"{{ end }}
+{{ end }}
+
+         securityContext:
+{{ if $service.user }}
+           runAsUser: {{ $service.user }} {{ end }}
+{{ if $service.read_only }}
+           readOnlyRootFilesystem: {{ $service.read_only }} {{ end }}
+{{ if $service.privileged }}
+           privileged: {{ $service.privileged }} {{ end }}
+{{ if or $service.cap_add $service.cap_drop }}
+           capabilities:
+{{ if $service.cap_add }}
+             add: {{ $service.cap_add }} {{ end }}
+{{ if  $service.cap_drop }}
+             drop: {{ $service.cap_drop }} {{ end }}
+{{ end }}
+
+{{ if or $service.cpu $service.memory }}
+         resources:
+           limits:
+{{ if $service.cpus }}
+             cpu: {{ $service.cpus }} {{ end }}
+{{ if $service.memory }}
+             memory: {{ $service.memory }} {{ end }}
 {{ end }}
 
 {{ if $service.healthcheck }}
