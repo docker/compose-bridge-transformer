@@ -50,9 +50,20 @@ spec:
               value: "{{ $value }}"{{ end }}
 {{ end }}
 
+{{ if or $service.user $service.group_add $service.sysctls $service.read_only $service.privileged $service.cap_add $service.cap_drop }}
          securityContext:
 {{ if $service.user }}
            runAsUser: {{ $service.user }} {{ end }}
+{{ if $service.group_add }}
+           supplementalGroups: {{ $service.group_add }} {{ end }}
+{{ if $service.sysctls }}
+           sysctls:
+{{ range $name, $value := $service.sysctls }}
+             name: {{ $name }}
+             value: {{ $value }}
+{{ end }}
+{{ end }}
+
 {{ if $service.read_only }}
            readOnlyRootFilesystem: {{ $service.read_only }} {{ end }}
 {{ if $service.privileged }}
@@ -63,6 +74,7 @@ spec:
              add: {{ $service.cap_add }} {{ end }}
 {{ if  $service.cap_drop }}
              drop: {{ $service.cap_drop }} {{ end }}
+{{ end }}
 {{ end }}
 
 {{ if or $service.cpu $service.memory }}
