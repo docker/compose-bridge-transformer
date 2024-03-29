@@ -51,29 +51,51 @@ spec:
 {{ end }}
 
 {{ if or $service.user $service.group_add $service.sysctls $service.read_only $service.privileged $service.cap_add $service.cap_drop }}
-         securityContext:
+          securityContext:
 {{ if $service.user }}
-           runAsUser: {{ $service.user }} {{ end }}
+            runAsUser: {{ $service.user }} {{ end }}
 {{ if $service.group_add }}
-           supplementalGroups: {{ $service.group_add }} {{ end }}
+            supplementalGroups: {{ $service.group_add }} {{ end }}
 {{ if $service.sysctls }}
-           sysctls:
+            sysctls:
 {{ range $name, $value := $service.sysctls }}
-             name: {{ $name }}
-             value: {{ $value }}
+              name: {{ $name }}
+              value: {{ $value }}
 {{ end }}
 {{ end }}
 
 {{ if $service.read_only }}
-           readOnlyRootFilesystem: {{ $service.read_only }} {{ end }}
+            readOnlyRootFilesystem: {{ $service.read_only }} {{ end }}
 {{ if $service.privileged }}
-           privileged: {{ $service.privileged }} {{ end }}
+            privileged: {{ $service.privileged }} {{ end }}
 {{ if or $service.cap_add $service.cap_drop }}
-           capabilities:
+            capabilities:
 {{ if $service.cap_add }}
-             add: {{ $service.cap_add }} {{ end }}
+              add: {{ $service.cap_add }} {{ end }}
 {{ if  $service.cap_drop }}
-             drop: {{ $service.cap_drop }} {{ end }}
+              drop: {{ $service.cap_drop }} {{ end }}
+{{ end }}
+{{ end }}
+
+{{ if or $service.dns $service.dns_search $service.dns_opt }}
+          dnsConfig:
+{{ if $service.dns }}
+            nameservers:
+{{ range $service.dns }}
+              - {{ . }}
+{{ end }}
+{{ end }}
+{{ if $service.dns_search }}
+            searches:
+{{ range $service.dns_search }}
+              - {{ . }}
+{{ end }}
+{{ end }}
+{{ if $service.dns_opt }}
+            options:
+{{ range $service.dns_opt }}
+              - name: {{ . }}
+{{ end }}
 {{ end }}
 {{ end }}
 
