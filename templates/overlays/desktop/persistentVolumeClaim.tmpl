@@ -1,0 +1,15 @@
+{{ $project := .name }}
+{{ range $name, $service := .services }}
+{{ range $volume := $service.volumes }}
+---
+#! {{ $name }}-{{ $volume.source }}-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}-{{ $volume.source | safe }}
+  namespace: {{ $project }}
+spec:
+  storageClassName: "hostpath"  # see docker/desktop-storage-provisioner
+{{ end }}
+{{ end }}

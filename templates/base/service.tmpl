@@ -13,7 +13,6 @@ metadata:
     com.docker.compose.project: {{ $project }}
     com.docker.compose.service: {{ $name }}
 spec:
-  type: LoadBalancer
   selector:
     com.docker.compose.project: {{ $project }}
     com.docker.compose.service: {{ $name }}

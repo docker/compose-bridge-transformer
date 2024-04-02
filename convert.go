@@ -46,6 +46,9 @@ func Convert(model map[string]any, templateDir string, out string) error {
 		return fmt.Errorf("cannot access templates dir: %w", err)
 	}
 	for _, entry := range dir {
+		if entry.Name() == "_index.tmpl" {
+			continue
+		}
 		f := filepath.Join(templateDir, entry.Name())
 		newOut := filepath.Join(out, entry.Name())
 		if entry.IsDir() {
@@ -58,14 +61,26 @@ func Convert(model map[string]any, templateDir string, out string) error {
 			}
 			continue
 		}
-		if applyTemplate(model, f, out); err != nil {
+		err := applyTemplate(model, f, out)
+		if err != nil {
+			return err
+		}
+	}
+	index := filepath.Join(templateDir, "_index.tmpl")
+	if _, err := os.Stat(index); err == nil {
+		files, err := os.ReadDir(out)
+		if err != nil {
+			return err
+		}
+		err = applyTemplate(files, index, out)
+		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func applyTemplate(model map[string]any, file string, output string) error {
+func applyTemplate(model any, file string, output string) error {
 	tmpl, err := template.New(filepath.Base(file)).Funcs(helpers).ParseFiles(file)
 	if err != nil {
 		ExitError("cannot parse template "+file, err)
