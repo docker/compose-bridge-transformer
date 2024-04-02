@@ -77,28 +77,6 @@ spec:
 {{ end }}
 {{ end }}
 
-{{ if or $service.dns $service.dns_search $service.dns_opt }}
-          dnsConfig:
-{{ if $service.dns }}
-            nameservers:
-{{ range $service.dns }}
-              - {{ . }}
-{{ end }}
-{{ end }}
-{{ if $service.dns_search }}
-            searches:
-{{ range $service.dns_search }}
-              - {{ . }}
-{{ end }}
-{{ end }}
-{{ if $service.dns_opt }}
-            options:
-{{ range $service.dns_opt }}
-              - name: {{ . }}
-{{ end }}
-{{ end }}
-{{ end }}
-
 {{ if or $service.cpu $service.memory }}
          resources:
            limits:
@@ -159,6 +137,30 @@ spec:
               readOnly: true
           {{ end }}
 {{ end }}
+
+
+{{ if or $service.dns $service.dns_search $service.dns_opt }}
+      dnsConfig:
+    {{ if $service.dns }}
+        nameservers:
+        {{ range $service.dns }}
+            - {{ . }}
+        {{ end }}
+    {{ end }}
+    {{ if $service.dns_search }}
+        searches:
+        {{ range $service.dns_search }}
+            - {{ . }}
+        {{ end }}
+    {{ end }}
+    {{ if $service.dns_opt }}
+        options:
+        {{ range $service.dns_opt }}
+            - name: {{ . }}
+        {{ end }}
+    {{ end }}
+{{ end }}
+
 
 {{ if or $service.volumes $service.secrets $service.configs }}
       volumes:
