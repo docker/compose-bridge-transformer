@@ -17,7 +17,6 @@ spec:
     # TODO would need to check which services use this volume
     - {{ if $volume.read_only }}ReadOnlyMany{{ else }}ReadWriteOnce{{ end }}
   volumeMode: Filesystem
-  storageClassName: "hostpath"  # see docker/desktop-storage-provisioner
   resources:
     requests:
       storage: 100Mi

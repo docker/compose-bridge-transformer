@@ -1,0 +1,15 @@
+{{ $project := .name }}
+{{ range $name, $service := .services }}
+{{ if $service.ports }}
+---
+#! {{ $name }}-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}-published
+  namespace: {{ $project }}
+spec:
+  type: LoadBalancer
+{{ end }}
+{{ end }}
