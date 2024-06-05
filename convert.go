@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -17,6 +18,12 @@ import (
 )
 
 func main() {
+	licenseAgreement := os.Getenv("LICENSE_AGREEMENT")
+	agreement, err := strconv.ParseBool(licenseAgreement)
+	if err != nil || !agreement {
+		fmt.Fprintln(os.Stderr, "setup the LICENSE_AGREEMENT environment variable to accept the Docker Subscription Service Agreement")
+		os.Exit(1)
+	}
 	raw, err := os.ReadFile("/in/compose.yaml")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to read compose file /in/compose.yaml")
