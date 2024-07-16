@@ -1,6 +1,16 @@
 {{ $project := .name }}
 {{ range $name, $service := .services }}
+{{ $publishedPort  := false }}
 {{ if $service.ports }}
+# check if there is at least one published port
+{{ range $port := $service.ports}}
+    {{ if $port.published }}
+        {{ $publishedPort = true }}
+        {{ break }}
+    {{ end }}
+{{ end }}
+{{ end }}
+{{ if $publishedPort }}
 ---
 #! {{ $name }}-service.yaml
 # Generated code, do not edit
