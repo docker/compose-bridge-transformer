@@ -19,9 +19,9 @@ spec:
     com.docker.compose.service: {{ $name }}
   ports:
 {{ range $port := $service.expose}}
-    - name: {{ $name }}-{{ $port }}
+    - name: {{ portName "expose" $name $port }}
       port: {{ $port }}
-      targetPort: {{ $name }}-{{ $port }}
+      targetPort: {{ portName $name $port }}
 {{ end }}
 {{ end }}
 {{ end }}

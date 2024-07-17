@@ -111,7 +111,7 @@ spec:
 {{ if $service.expose }}
           ports:
     {{ range $port := $service.expose }}
-            - name: {{ $name }}-{{ $port }}
+            - name: {{ portName $name $port }}
               containerPort: {{ $port }}
     {{ end }}
 {{ end }}

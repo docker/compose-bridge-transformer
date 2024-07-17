@@ -31,10 +31,10 @@ spec:
   ports:
 {{ range $port := $service.ports}}
     {{ if $port.published }}
-    - name: {{ if $port.name }}{{ $port.name }}{{ else }}{{ $name }}-{{ $port.published }}{{ end }}
+    - name: {{ if $port.name }}{{ slice $port.name 0 14 }}{{ else }}{{ portName $name $port.published }}{{ end }}
       port: {{ $port.published }}
       protocol:  {{ $port.protocol | uppercase }}
-      targetPort: {{ $name }}-{{ $port.target }}
+      targetPort: {{ portName $name $port.target }}
     {{ end }}
 {{ end }}
 
