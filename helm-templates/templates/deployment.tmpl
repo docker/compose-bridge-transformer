@@ -4,9 +4,13 @@
 #! {{ $name }}-deployment.yaml
 # Generated code, do not edit
 apiVersion: apps/v1
+{{ if eq $service.deploy.mode "global" }}
+kind: DaemonSet
+{{ else }}
 kind: Deployment
+{{ end }}
 metadata:
-  name: {{ $name }}
+  name: {{ $name | safe }}
   namespace: {{ helmValue ".Values.namespace" }}
   labels:
     com.docker.compose.project: {{ $project }}
@@ -29,17 +33,58 @@ spec:
         com.docker.compose.network.{{ $name }}: "true"
 {{ end }}
     spec:
+{{ if $service.restart }}
+      restartPolicy : {{ map $service.restart "always->Always" "on-failure->OnFailure" "no->Never"}}
+{{ end }}
       containers:
-        - name: {{ if $service.container_name }}{{ $service.container_name }}{{ else }}{{ $name }}{{ end }}
+        - name: {{ if $service.container_name }}{{ $service.container_name | safe}}{{ else }}{{ $name | safe}}{{ end }}
           image: {{ helmValue ".Values.%s.image" $name }}
           imagePullPolicy: {{ helmValue ".Values.%s.imagePullPolicy" $name }}
 {{ if $service.command }}
           command: {{ $service.command }}{{ end }}
+{{ if $service.working_dir }}
+          workingDir: {{ $service.working_dir }}{{ end }}
 {{ if $service.environment }}
           env:
 {{ range $key, $value := $service.environment }}
             - name: {{ $key }}
               value: "{{ $value }}"{{ end }}
+{{ end }}
+
+{{ if or $service.user $service.group_add $service.sysctls $service.read_only $service.privileged $service.cap_add $service.cap_drop }}
+          securityContext:
+{{ if $service.user }}
+            runAsUser: {{ $service.user }} {{ end }}
+{{ if $service.group_add }}
+            supplementalGroups: {{ $service.group_add }} {{ end }}
+{{ if $service.sysctls }}
+            sysctls:
+{{ range $name, $value := $service.sysctls }}
+              name: {{ $name }}
+              value: {{ $value }}
+{{ end }}
+{{ end }}
+
+{{ if $service.read_only }}
+            readOnlyRootFilesystem: {{ $service.read_only }} {{ end }}
+{{ if $service.privileged }}
+            privileged: {{ $service.privileged }} {{ end }}
+{{ if or $service.cap_add $service.cap_drop }}
+            capabilities:
+{{ if $service.cap_add }}
+              add: {{ $service.cap_add }} {{ end }}
+{{ if  $service.cap_drop }}
+              drop: {{ $service.cap_drop }} {{ end }}
+{{ end }}
+{{ end }}
+
+{{ if or $service.cpu $service.memory }}
+         resources:
+           limits:
+{{ if $service.cpus }}
+             cpu: {{ $service.cpus }} {{ end }}
+{{ if $service.memory }}
+             memory: {{ $service.memory }} {{ end }}
 {{ end }}
 
 {{ if $service.healthcheck }}
@@ -72,7 +117,7 @@ spec:
     {{ end }}
 {{ end }}
 
-{{ if or $service.volumes $service.secrets }}
+{{ if or $service.volumes $service.secrets $service.configs }}
           volumeMounts:
 {{ range $volume := $service.volumes }}
             - name: {{ $volume.target | safe }}
@@ -86,24 +131,63 @@ spec:
               subPath: {{ $secret.source }}
               readOnly: true
           {{ end }}
+          {{ range $config := $service.configs }}
+            - name: {{ $config.target | safe }}
+              mountPath: {{ $config.target }}
+              subPath: {{ $config.source }}
+              readOnly: true
+          {{ end }}
 {{ end }}
 
-{{ if or $service.volumes $service.secrets }}
+
+{{ if or $service.dns $service.dns_search $service.dns_opt }}
+      dnsConfig:
+    {{ if $service.dns }}
+        nameservers:
+        {{ range $service.dns }}
+            - {{ . }}
+        {{ end }}
+    {{ end }}
+    {{ if $service.dns_search }}
+        searches:
+        {{ range $service.dns_search }}
+            - {{ . }}
+        {{ end }}
+    {{ end }}
+    {{ if $service.dns_opt }}
+        options:
+        {{ range $service.dns_opt }}
+            - name: {{ . }}
+        {{ end }}
+    {{ end }}
+{{ end }}
+
+
+{{ if or $service.volumes $service.secrets $service.configs }}
       volumes:
 {{ range $secret := $service.secrets }}
         - name: {{ $secret.target | safe }}
           secret:
-            secretName: {{ $secret.source }}
+            secretName: {{ $secret.source | safe }}
             items:
               - key: {{ $secret.source }}
                 path: {{ $secret.source }}
+{{ end }}
+
+{{ range $config := $service.configs }}
+        - name: {{ $config.target | safe }}
+          configMap:
+            name: {{ $project | safe }}
+            items:
+              - key: {{ $config.source }}
+                path: {{ $config.source }}
 {{ end }}
 
 {{ range $volume := $service.volumes }}
         - name: {{ $volume.target | safe }}
 {{ if eq $volume.type "volume" }}
           persistentVolumeClaim:
-            claimName: {{$name}}-{{ $volume.source | safe }}
+            claimName: {{ $name | safe }}-{{ $volume.source | safe }}
 {{ else if eq $volume.type "bind" }}
           hostPath:
             path: {{ $volume.source }}

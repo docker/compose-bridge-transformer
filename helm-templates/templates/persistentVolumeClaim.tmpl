@@ -10,7 +10,7 @@ metadata:
     com.docker.compose.service: {{ $name }}
     com.docker.compose.volume: {{ $volume.source }}
     app.kubernetes.io/managed-by: Helm
-  name: {{ $name }}-{{ $volume.source | safe }}
+  name: {{ $name | safe}}-{{ $volume.source | safe }}
   namespace: {{ helmValue ".Values.namespace" }}
 spec:
   accessModes:
