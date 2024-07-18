@@ -169,17 +169,7 @@ var helpers = map[string]any{
 		return strings.Title(s)
 	},
 	"safe": func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.Map(func(r rune) rune {
-			if r < 'a' || r > 'z' {
-				return '-'
-			}
-			return r
-		}, s)
-		for len(s) > 0 && s[0] == '-' {
-			s = s[1:]
-		}
-		return s
+		return safe(s)
 	},
 	"truncate": func(n int, s []any) []any {
 		return s[n:]
@@ -241,8 +231,24 @@ var helpers = map[string]any{
 		if len(service) < shrinkTo {
 			shrinkTo = len(service)
 		}
-		return fmt.Sprintf("%s-%s", service[0:shrinkTo], portAsString)
+		return safe(fmt.Sprintf("%s-%s", service[0:shrinkTo], portAsString))
 	},
+}
+
+func safe(s string) string {
+	s = strings.ToLower(s)
+	s = strings.Map(func(r rune) rune {
+		if ('a' <= r && r <= 'z') ||
+			('A' <= r && r <= 'Z') ||
+			('0' <= r && r <= '9') {
+			return r
+		}
+		return '-'
+	}, s)
+	for len(s) > 0 && s[0] == '-' {
+		s = s[1:]
+	}
+	return s
 }
 
 func ExitError(message string, err error) {

@@ -6,13 +6,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $project }}
-  namespace: {{ $project }}
+  name: {{ $project | safe }}
+  namespace: {{ $project | safe }}
   labels:
     com.docker.compose.project: {{ $project }}
 data:
 {{ range $name, $config := .configs }}
-  {{ $name }}: |
+  {{ $name | safe }}: |
 {{ indent $config.content 4 }}
 {{ end }}
 {{ end }}

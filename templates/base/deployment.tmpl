@@ -10,8 +10,8 @@ kind: DaemonSet
 kind: Deployment
 {{ end }}
 metadata:
-  name: {{ $name }}
-  namespace: {{ $project }}
+  name: {{ $name | safe }}
+  namespace: {{ $project | safe }}
   labels:
     com.docker.compose.project: {{ $project }}
     com.docker.compose.service: {{ $name }}
@@ -36,7 +36,7 @@ spec:
       restartPolicy : {{ map $service.restart "always->Always" "on-failure->OnFailure" "no->Never"}}
 {{ end }}
       containers:
-        - name: {{ if $service.container_name }}{{ $service.container_name }}{{ else }}{{ $name }}{{ end }}
+        - name: {{ if $service.container_name }}{{ $service.container_name | safe }}{{ else }}{{ $name | safe }}{{ end }}
           image: {{ if $service.image }}{{ $service.image }}{{ else }}{{ $project }}-{{ $name }}{{ end }}
           imagePullPolicy: {{ if $service.pull_policy }}{{ $service.pull_policy | title }}{{ else }}IfNotPresent{{ end }}
 {{ if $service.command }}
@@ -167,7 +167,7 @@ spec:
 {{ range $secret := $service.secrets }}
         - name: {{ $secret.target | safe }}
           secret:
-            secretName: {{ $secret.source }}
+            secretName: {{ $secret.source | safe}}
             items:
               - key: {{ $secret.source }}
                 path: {{ $secret.source }}
@@ -176,7 +176,7 @@ spec:
 {{ range $config := $service.configs }}
         - name: {{ $config.target | safe }}
           configMap:
-            name: {{ $project }}
+            name: {{ $project | safe }}
             items:
               - key: {{ $config.source }}
                 path: {{ $config.source }}
@@ -186,7 +186,7 @@ spec:
         - name: {{ $volume.target | safe }}
 {{ if eq $volume.type "volume" }}
           persistentVolumeClaim:
-            claimName: {{$name}}-{{ $volume.source | safe }}
+            claimName: {{$name | safe }}-{{ $volume.source | safe }}
 {{ else if eq $volume.type "bind" }}
           hostPath:
             path: {{ $volume.source }}
