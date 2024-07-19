@@ -227,6 +227,22 @@ var helpers = map[string]any{
 		}
 		return s
 	},
+	"portName": func(service string, port any) string {
+		var portAsString string
+		switch port.(type) {
+		case string:
+			portAsString = port.(string)
+			break
+		case int:
+			portAsString = strconv.Itoa(port.(int))
+			break
+		}
+		shrinkTo := 15 - (len(portAsString) + 1)
+		if len(service) < shrinkTo {
+			shrinkTo = len(service)
+		}
+		return fmt.Sprintf("%s-%s", service[0:shrinkTo], portAsString)
+	},
 }
 
 func ExitError(message string, err error) {
