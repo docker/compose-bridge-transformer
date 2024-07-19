@@ -6,7 +6,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $name }}-network-policy
+  name: {{ $name | safe }}-network-policy
   namespace: {{ helmValue ".Values.namespace" }}
 spec:
   podSelector:

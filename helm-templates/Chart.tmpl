@@ -1,13 +1,13 @@
 {{ $project := .name }}
 #! Chart.yaml
 apiVersion: v2
-name: {{ $project }}
+name: {{ $project | safe }}
 version: 0.0.1
 # kubeVersion: >= 1.29.1
 description: A generated Helm Chart for {{ $project }} generated via compose-bridge.
 type: application
 keywords:
-  - {{ $project }}
+  - {{ $project | safe }}
 appVersion: 'v0.0.1'
 sources:
 annotations:

@@ -17,8 +17,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $name }}-published
-  namespace: {{ $project }}
+  name: {{ $name | safe }}-published
+  namespace: {{ $project | safe }}
 spec:
   type: LoadBalancer
 {{ end }}
