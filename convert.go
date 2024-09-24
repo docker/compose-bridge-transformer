@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -59,8 +60,8 @@ func Convert(model map[string]any, templateDir string, out string) error {
 		f := filepath.Join(templateDir, entry.Name())
 		newOut := filepath.Join(out, entry.Name())
 		if entry.IsDir() {
-			err := os.Mkdir(newOut, 0o700)
-			if err != nil {
+			err := os.MkdirAll(newOut, fs.ModePerm)
+			if err != nil && !os.IsExist(err){
 				return err
 			}
 			if err := Convert(model, f, newOut); err != nil {
