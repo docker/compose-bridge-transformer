@@ -6,7 +6,9 @@ kind: Kustomization
 resources:
 - ../../base
 
-patches:
-{{ range . }}
-  - path: {{ .Name }}
+{{ if gt (len .) 0 }}
+    patches:
+    {{ range . }}
+      - path: {{ .Name }}
+    {{ end }}
 {{ end }}
