@@ -7,8 +7,8 @@ resources:
 - ../../base
 
 {{ if gt (len .) 0 }}
-    patches:
-    {{ range . }}
-      - path: {{ .Name }}
-    {{ end }}
+patches:
+{{ range . }}
+  - path: {{ .Name }}
+{{ end }}
 {{ end }}
