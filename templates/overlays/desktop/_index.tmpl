@@ -9,6 +9,8 @@ resources:
 {{ if or (gt (len .) 1) (and (eq (len .) 1) (ne (index . 0).Name "kustomization.yaml")) }}
 patches:
 {{ range . }}
+  {{ if ne .Name "kustomization.yaml" }}
   - path: {{ .Name }}
+  {{ end }}
 {{ end }}
 {{ end }}

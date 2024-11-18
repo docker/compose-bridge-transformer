@@ -5,5 +5,7 @@ kind: Kustomization
 
 resources:
 {{ range . }}
+ {{ if ne .Name "kustomization.yaml" }}
   - {{ .Name }}
+  {{ end }}
 {{ end }}
