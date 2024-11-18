@@ -6,7 +6,7 @@ kind: Kustomization
 resources:
 - ../../base
 
-{{ if gt (len .) 0 }}
+{{ if or (gt (len .) 1) (and (eq (len .) 1) (ne (index . 0).Name "kustomize.yaml")) }}
 patches:
 {{ range . }}
   - path: {{ .Name }}
