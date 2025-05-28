@@ -148,7 +148,9 @@ jobs:
             *.cache-to=type=gha,scope=transformer-images,mode=max
 
   release:
-    permissions: write # for release-action
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # for release-action
     steps:
       -
         name: GitHub Release
