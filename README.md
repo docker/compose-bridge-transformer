@@ -25,7 +25,7 @@ go build -o /go/bin/transform
 
 build the transformer base image for local architecture
 ```shell
-docker bake -f docker-bake.hcl transformer
+docker bake -f docker-bake.hcl transformer_local
 ```
 
 build the transformer base image for all architectures
@@ -35,7 +35,7 @@ docker bake -f docker-bake.hcl transformer_all
 
 build the kubernetes transformer image for local architecture
 ```shell
-docker bake -f docker-bake.hcl kubernetes
+docker bake -f docker-bake.hcl kubernetes_local
 ```
 
 build the kubernetes transformer image for all architectures
@@ -45,7 +45,7 @@ docker bake -f docker-bake.hcl kubernetes_all
 
 build the helm transformer image for local architecture
 ```shell
-docker bake -f docker-bake.hcl helm
+docker bake -f docker-bake.hcl helm_local
 ```
 
 build the helm transformer image for all architectures
