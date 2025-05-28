@@ -15,15 +15,14 @@ on:
 jobs:
   transformer-image:
     runs-on: ubuntu-latest
-    outputs:
-      digest: ${{ fromJSON(steps.bake.outputs.metadata).transformer_all['containerimage.digest'] }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERPUBLICBOT_USERNAME }}
+          username: ${{ vars.DOCKERPUBLICBOT_USERNAME }}
           password: ${{ secrets.DOCKERPUBLICBOT_WRITE_PAT }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -49,9 +48,9 @@ jobs:
           source: .
           files: |
             ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
+            cwd://${{ steps.meta.outputs.bake-file }}
           targets: transformer_all
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           sbom: true
           provenance: mode=max
           set: |
@@ -61,15 +60,14 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - transformer-image
-    outputs:
-      digest: ${{ fromJSON(steps.bake.outputs.metadata).kubernetes_all['containerimage.digest'] }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERPUBLICBOT_USERNAME }}
+          username: ${{ vars.DOCKERPUBLICBOT_USERNAME }}
           password: ${{ secrets.DOCKERPUBLICBOT_WRITE_PAT }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -95,9 +93,9 @@ jobs:
           source: .
           files: |
             ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
+            cwd://${{ steps.meta.outputs.bake-file }}
           targets: kubernetes_all
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           sbom: true
           provenance: mode=max
           set: |
@@ -107,15 +105,14 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - transformer-image
-    outputs:
-      digest: ${{ fromJSON(steps.bake.outputs.metadata).helm_all['containerimage.digest'] }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERPUBLICBOT_USERNAME }}
+          username: ${{ vars.DOCKERPUBLICBOT_USERNAME }}
           password: ${{ secrets.DOCKERPUBLICBOT_WRITE_PAT }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -141,9 +138,9 @@ jobs:
           source: .
           files: |
             ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
+            cwd://${{ steps.meta.outputs.bake-file }}
           targets: helm_all
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           sbom: true
           provenance: mode=max
           set: |
