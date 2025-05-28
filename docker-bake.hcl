@@ -20,29 +20,41 @@ target "_all-platforms" {
 target "transformer" {
   inherits = ["meta-helper"]
   target = "transformer"
-  tags = ["docker/compose-bridge-transformer"]
 }
 
 target "transformer_all" {
   inherits = ["transformer", "_all-platforms"]
 }
 
+target "transformer_local" {
+    inherits = ["transformer"]
+    tags = ["docker/compose-bridge-transformer"]
+}
+
 target "kubernetes" {
   inherits = ["meta-helper"]
   target = "kubernetes"
-  tags = ["docker/compose-bridge-kubernetes"]
 }
 
 target "kubernetes_all" {
   inherits = ["kubernetes", "_all-platforms"]
 }
 
+target "kubernetes_local" {
+    inherits = ["kubernetes"]
+    tags = ["docker/compose-bridge-kubernetes"]
+}
+
 target "helm" {
   inherits = ["meta-helper"]
   target = "helm"
-  tags = ["docker/compose-bridge-helm"]
 }
 
 target "helm_all" {
   inherits = ["helm", "_all-platforms"]
+}
+
+target "helm_local" {
+    inherits = ["helm"]
+    tags = ["docker/compose-bridge-helm"]
 }
