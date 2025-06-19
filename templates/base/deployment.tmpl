@@ -39,8 +39,10 @@ spec:
         - name: {{ if $service.container_name }}{{ $service.container_name | safe }}{{ else }}{{ $name | safe }}{{ end }}
           image: {{ if $service.image }}{{ $service.image }}{{ else }}{{ $project }}-{{ $name }}{{ end }}
           imagePullPolicy: {{ if $service.pull_policy }}{{ $service.pull_policy | title }}{{ else }}IfNotPresent{{ end }}
+{{ if $service.entrypoint }}
+          command: {{ $service.entrypoint }}{{ end }}
 {{ if $service.command }}
-          command: {{ $service.command }}{{ end }}
+          args: {{ $service.command }}{{ end }}
 {{ if $service.working_dir }}
           workingDir: {{ $service.working_dir }}{{ end }}
 {{ if $service.environment }}
