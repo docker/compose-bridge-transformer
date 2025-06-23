@@ -48,7 +48,7 @@ spec:
           env:
 {{ range $key, $value := $service.environment }}
             - name: {{ $key }}
-              value: "{{ $value }}"{{ end }}
+              value: {{ printf "%q" $value }}{{ end }}
 {{ end }}
 
 {{ if or $service.user $service.group_add $service.sysctls $service.read_only $service.privileged $service.cap_add $service.cap_drop }}
