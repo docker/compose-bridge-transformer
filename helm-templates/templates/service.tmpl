@@ -24,7 +24,7 @@ metadata:
     com.docker.compose.service: {{ $name }}
     app.kubernetes.io/managed-by: Helm
 spec:
-  type: LoadBalancer
+  type: {{ helmValue ".Values.service.type" }}
   selector:
     com.docker.compose.project: {{ $project }}
     com.docker.compose.service: {{ $name }}

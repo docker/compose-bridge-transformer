@@ -15,11 +15,11 @@ metadata:
 spec:
   accessModes:
     # TODO would need to check which services use this volume
-    - {{ if $volume.read_only }}ReadOnlyMany{{ else }}ReadWriteOnce{{ end }}
+    - {{ if $volume.read_only }}ReadOnlyMany{{ else }}{{ helmValue ".Values.storage.defaultAccessMode" }}{{ end }}
   volumeMode: Filesystem
-  storageClassName: "hostpath"  # see docker/desktop-storage-provisioner
+  storageClassName: {{ helmValue ".Values.storage.defaultStorageClass" }}  # see docker/desktop-storage-provisioner
   resources:
     requests:
-      storage: 100Mi
+      storage: {{ helmValue ".Values.storage.defaultSize" }}
 {{ end }}
 {{ end }}

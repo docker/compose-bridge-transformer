@@ -1,7 +1,31 @@
 {{ $project := .name }}
 #! values.yaml
+# Project Name
+projectName: {{ $project | safe }}
+
 # Namespace
 namespace: {{ $project | safe}}
+
+# Default deployment settings
+deployment:
+  strategy: Recreate
+  defaultReplicas: 1
+
+# Default resource limits
+resources:
+  defaultCpuLimit: "100m"
+  defaultMemoryLimit: "512Mi"
+
+# Service settings
+service:
+  type: LoadBalancer
+
+# Storage settings
+storage:
+  defaultStorageClass: "hostpath"
+  defaultSize: "100Mi"
+  defaultAccessMode: "ReadWriteOnce"
+
 # Services variables
 {{ range $name, $service := .services }}
 {{ $name }}:
