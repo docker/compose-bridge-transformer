@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM} golang:1.21 AS builder
+FROM --platform=${BUILDPLATFORM} golang:1.24.5 AS builder
 WORKDIR $GOPATH/src/github.com/docker/compose-bridge-transformer
 COPY . .
 RUN go build -o /go/bin/transform
