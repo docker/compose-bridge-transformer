@@ -17,13 +17,13 @@ metadata:
     com.docker.compose.service: {{ $name }}
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: {{ if $service.scale }} {{ $service.scale }} {{ else }} 1 {{ end }}
+  replicas: {{ if $service.scale }} {{ $service.scale }} {{ else }} {{ helmValue ".Values.deployment.defaultReplicas" }} {{ end }}
   selector:
     matchLabels:
       com.docker.compose.project: {{ $project }}
       com.docker.compose.service: {{$name}}
   strategy:
-    type: Recreate
+    type: {{ helmValue ".Values.deployment.strategy" }}
   template:
     metadata:
       labels:
@@ -78,14 +78,14 @@ spec:
 {{ end }}
 {{ end }}
 
-{{ if or $service.cpu $service.memory }}
-         resources:
-           limits:
+          resources:
+            limits:
 {{ if $service.cpus }}
-             cpu: {{ $service.cpus }} {{ end }}
+              cpu: {{ $service.cpus }} {{ else }}
+              cpu: {{ helmValue ".Values.resources.defaultCpuLimit" }} {{ end }}
 {{ if $service.memory }}
-             memory: {{ $service.memory }} {{ end }}
-{{ end }}
+              memory: {{ $service.memory }} {{ else }}
+              memory: {{ helmValue ".Values.resources.defaultMemoryLimit" }} {{ end }}
 
 {{ if $service.healthcheck }}
           livenessProbe:
@@ -177,7 +177,7 @@ spec:
 {{ range $config := $service.configs }}
         - name: {{ $config.target | safe }}
           configMap:
-            name: {{ $project | safe }}
+            name: {{ helmValue ".Values.projectName"}}
             items:
               - key: {{ $config.source }}
                 path: {{ $config.source }}
