@@ -40,8 +40,10 @@ spec:
         - name: {{ if $service.container_name }}{{ $service.container_name | safe}}{{ else }}{{ $name | safe}}{{ end }}
           image: {{ helmValue ".Values.%s.image" $name }}
           imagePullPolicy: {{ helmValue ".Values.%s.imagePullPolicy" $name }}
+{{ if $service.entrypoint }}
+          command: {{ $service.entrypoint }}{{ end }}
 {{ if $service.command }}
-          command: {{ $service.command }}{{ end }}
+          args: {{ $service.command }}{{ end }}
 {{ if $service.working_dir }}
           workingDir: {{ $service.working_dir }}{{ end }}
 {{ if $service.environment }}
