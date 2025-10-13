@@ -40,8 +40,16 @@ spec:
         - name: {{ if $service.container_name }}{{ $service.container_name | safe}}{{ else }}{{ $name | safe}}{{ end }}
           image: {{ helmValue ".Values.%s.image" $name }}
           imagePullPolicy: {{ helmValue ".Values.%s.imagePullPolicy" $name }}
+{{ if $service.entrypoint }}
+          command:
+{{ range $service.entrypoint }}
+            - {{ . }}
+{{ end }}{{ end }}
 {{ if $service.command }}
-          command: {{ $service.command }}{{ end }}
+          args:
+{{ range $service.command }}
+            - {{ . }}
+{{ end }}{{ end }}
 {{ if $service.working_dir }}
           workingDir: {{ $service.working_dir }}{{ end }}
 {{ if or $service.environment $service.models }}
@@ -51,7 +59,7 @@ spec:
               value: {{ printf "%q" $value }}{{ end }}
 {{ range $key, $value := $service.models }}
             - name: {{ if $value.endpoint_var }}{{ $value.endpoint_var }}{{ else }}{{ $key | uppercase }}_URL{{ end }}
-              value: {{ helmValue ".Values.modelRunner.endpoint" }}
+              value: {{ helmValue "if .Values.modelRunner.enabled" }}"http://docker-model-runner/engines/v1/"{{ helmValue "else" }}{{ helmValue ".Values.modelRunner.hostEndpoint" }}{{ helmValue "end" }}
             - name: {{ if $value.model_var }}{{ $value.model_var }}{{ else }}{{ $key | uppercase }}_MODEL{{ end }}
               value: "{{ or (index $.models $key).model $key }}"{{ end }}
 {{ end }}

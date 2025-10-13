@@ -1,0 +1,86 @@
+{{ $project := .name }}
+{{ if .models }}
+---
+#! model-runner-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-model-runner
+  namespace: {{ helmValue ".Values.namespace" }}
+  labels:
+    app: docker-model-runner
+    com.docker.compose.project: {{ $project }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: {{ helmValue "if .Values.modelRunner.enabled" }}1{{ helmValue "else" }}0{{ helmValue "end" }}
+  selector:
+    matchLabels:
+      app: docker-model-runner
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: docker-model-runner
+        com.docker.compose.project: {{ $project }}
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.35
+          command: ["sh", "-c", "chmod a+rwx /models"]
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+      containers:
+        - name: model-runner
+          image: {{ helmValue ".Values.modelRunner.image" }}
+          imagePullPolicy: {{ helmValue ".Values.modelRunner.imagePullPolicy" }}
+          ports:
+            - name: http
+              containerPort: 12434
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+          resources:
+            limits:
+              cpu: {{ helmValue ".Values.modelRunner.resources.limits.cpu" }}
+              memory: {{ helmValue ".Values.modelRunner.resources.limits.memory" }}
+            requests:
+              cpu: {{ helmValue ".Values.modelRunner.resources.requests.cpu" }}
+              memory: {{ helmValue ".Values.modelRunner.resources.requests.memory" }}
+          readinessProbe:
+            httpGet:
+              path: /engines/status
+              port: 12434
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /engines/status
+              port: 12434
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+        - name: model-init
+          image: curlimages/curl:8.14.1
+          command: ["/bin/sh", "-c"]
+          args:
+          - |
+            set -ex
+            MODEL_RUNNER=http://localhost:12434
+            echo "Pre-pulling models..."
+            {{ helmValue "range .Values.modelRunner.models" }}
+            echo "Pulling model: {{ helmValue "." }}"
+            curl -d "{\"from\": \"{{ helmValue "." }}\"}" "$MODEL_RUNNER"/models/create
+            {{ helmValue "end" }}
+            echo "Model pre-pull complete"
+            tail -f /dev/null
+          volumeMounts:
+          - name: model-storage
+            mountPath: /models
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-storage
+{{ end }}
