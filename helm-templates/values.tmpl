@@ -26,6 +26,13 @@ storage:
   defaultSize: "100Mi"
   defaultAccessMode: "ReadWriteOnce"
 
+{{ if .models }}
+# Model Runner settings
+modelRunner:
+  # Endpoint for Docker Model Runner (Docker Desktop host instance)
+  endpoint: "http://host.docker.internal:12434/engines/v1/"
+{{ end }}
+
 # Services variables
 {{ range $name, $service := .services }}
 {{ $name }}:
