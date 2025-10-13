@@ -54,12 +54,17 @@ func Convert(model map[string]any, templateDir string, out string) error {
 		f := filepath.Join(templateDir, entry.Name())
 		newOut := filepath.Join(out, entry.Name())
 		if entry.IsDir() {
+			// Create directory lazily - it will be created when files are written
 			err := os.MkdirAll(newOut, fs.ModePerm)
 			if err != nil && !os.IsExist(err) {
 				return err
 			}
 			if err := Convert(model, f, newOut); err != nil {
 				return err
+			}
+			// Clean up empty directories
+			if isEmpty, _ := isDirEmpty(newOut); isEmpty {
+				os.Remove(newOut)
 			}
 			continue
 		}
@@ -80,6 +85,14 @@ func Convert(model map[string]any, templateDir string, out string) error {
 		}
 	}
 	return nil
+}
+
+func isDirEmpty(path string) (bool, error) {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return false, err
+	}
+	return len(entries) == 0, nil
 }
 
 func applyTemplate(model any, file string, output string) error {
