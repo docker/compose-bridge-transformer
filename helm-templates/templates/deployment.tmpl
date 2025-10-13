@@ -44,11 +44,16 @@ spec:
           command: {{ $service.command }}{{ end }}
 {{ if $service.working_dir }}
           workingDir: {{ $service.working_dir }}{{ end }}
-{{ if $service.environment }}
+{{ if or $service.environment $service.models }}
           env:
 {{ range $key, $value := $service.environment }}
             - name: {{ $key }}
               value: {{ printf "%q" $value }}{{ end }}
+{{ range $key, $value := $service.models }}
+            - name: {{ if $value.endpoint_var }}{{ $value.endpoint_var }}{{ else }}{{ $key | uppercase }}_URL{{ end }}
+              value: {{ helmValue ".Values.modelRunner.endpoint" }}
+            - name: {{ if $value.model_var }}{{ $value.model_var }}{{ else }}{{ $key | uppercase }}_MODEL{{ end }}
+              value: "{{ or (index $.models $key).model $key }}"{{ end }}
 {{ end }}
 
 {{ if or $service.user $service.group_add $service.sysctls $service.read_only $service.privileged $service.cap_add $service.cap_drop }}
