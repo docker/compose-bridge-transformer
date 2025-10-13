@@ -1,0 +1,94 @@
+{{ $project := .name }}
+{{ if .models }}
+---
+#! model-runner-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-model-runner
+  namespace: {{ $project | safe }}
+  labels:
+    com.docker.compose.project: {{ $project }}
+    com.docker.model.runner: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      com.docker.compose.project: {{ $project }}
+      com.docker.model.runner: "true"
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        com.docker.compose.project: {{ $project }}
+        com.docker.model.runner: "true"
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.35
+          command: ["sh", "-c", "chmod a+rwx /models"]
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+      containers:
+        - name: model-runner
+          image: docker/model-runner:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 12434
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /engines/status
+              port: 12434
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /engines/status
+              port: 12434
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+        - name: model-init
+          image: curlimages/curl:8.14.1
+          command: ["/bin/sh", "-c"]
+          args:
+          - |
+            set -ex
+            MODEL_RUNNER=http://localhost:12434
+            echo "Pre-pulling models..."
+            while IFS= read -r model; do
+              if [ -n "$model" ]; then
+                echo "Pulling model: $model"
+                curl -d "{\"from\": \"$model\"}" "$MODEL_RUNNER"/models/create
+              fi
+            done < /config/models
+            echo "Model pre-pull complete"
+            tail -f /dev/null
+          volumeMounts:
+          - name: model-storage
+            mountPath: /models
+          - name: init-config
+            mountPath: /config
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-storage
+      - name: init-config
+        configMap:
+          name: docker-model-runner-init
+{{ end }}

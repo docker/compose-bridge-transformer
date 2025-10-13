@@ -29,8 +29,33 @@ storage:
 {{ if .models }}
 # Model Runner settings
 modelRunner:
-  # Endpoint for Docker Model Runner (Docker Desktop host instance)
-  endpoint: "http://host.docker.internal:12434/engines/v1/"
+  # Set to false for Docker Desktop (uses host instance)
+  # Set to true for standalone Kubernetes clusters
+  enabled: true
+
+  # Endpoint used when enabled=false (Docker Desktop)
+  hostEndpoint: "http://host.docker.internal:12434/engines/v1/"
+
+  # Deployment settings when enabled=true
+  image: "docker/model-runner:latest"
+  imagePullPolicy: "IfNotPresent"
+
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+
+  # Storage for models
+  storage:
+    size: "100Gi"
+    storageClass: ""  # Empty uses default storage class
+
+  # Models to pre-pull
+  models:{{ range $name, $model := .models }}
+    - {{ $model.model }}{{ end }}
 {{ end }}
 
 # Services variables

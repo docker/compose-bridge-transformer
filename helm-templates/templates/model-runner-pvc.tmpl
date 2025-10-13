@@ -1,0 +1,22 @@
+{{ $project := .name }}
+{{ if .models }}
+---
+#! model-runner-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-storage
+  namespace: {{ helmValue ".Values.namespace" }}
+  labels:
+    app: docker-model-runner
+    com.docker.compose.project: {{ $project }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: {{ helmValue ".Values.modelRunner.storage.storageClass" }}
+  resources:
+    requests:
+      storage: {{ helmValue ".Values.modelRunner.storage.size" }}
+{{ end }}
