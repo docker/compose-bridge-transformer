@@ -31,7 +31,7 @@ storage:
 modelRunner:
   # Set to false for Docker Desktop (uses host instance)
   # Set to true for standalone Kubernetes clusters
-  enabled: true
+  enabled: false
 
   # Endpoint used when enabled=false (Docker Desktop)
   hostEndpoint: "http://host.docker.internal:12434/engines/v1/"
@@ -39,6 +39,26 @@ modelRunner:
   # Deployment settings when enabled=true
   image: "docker/model-runner:latest"
   imagePullPolicy: "IfNotPresent"
+
+  # GPU support
+  gpu:
+    enabled: false
+    vendor: "nvidia"  # nvidia or amd
+    count: 1
+
+  # Node scheduling (uncomment and customize as needed)
+  # nodeSelector:
+  #   accelerator: nvidia-tesla-t4
+  # tolerations: []
+  # affinity: {}
+
+  # Security context
+  securityContext:
+    allowPrivilegeEscalation: false
+
+  # Environment variables (uncomment and add as needed)
+  # env:
+  #   DMR_ORIGINS: "http://localhost:31246"
 
   resources:
     limits:
