@@ -24,6 +24,12 @@ spec:
         app: docker-model-runner
         com.docker.compose.project: {{ $project }}
     spec:
+      # Uncomment to schedule on specific nodes (e.g., GPU nodes)
+      # nodeSelector: {{ helmValue ".Values.modelRunner.nodeSelector" }}
+      # Uncomment to tolerate tainted nodes
+      # tolerations: {{ helmValue ".Values.modelRunner.tolerations" }}
+      # Uncomment for advanced pod scheduling
+      # affinity: {{ helmValue ".Values.modelRunner.affinity" }}
       initContainers:
         - name: fix-permissions
           image: busybox:1.35
@@ -35,6 +41,8 @@ spec:
         - name: model-runner
           image: {{ helmValue ".Values.modelRunner.image" }}
           imagePullPolicy: {{ helmValue ".Values.modelRunner.imagePullPolicy" }}
+          securityContext:
+            allowPrivilegeEscalation: {{ helmValue ".Values.modelRunner.securityContext.allowPrivilegeEscalation" }}
           ports:
             - name: http
               containerPort: 12434
@@ -45,9 +53,11 @@ spec:
             limits:
               cpu: {{ helmValue ".Values.modelRunner.resources.limits.cpu" }}
               memory: {{ helmValue ".Values.modelRunner.resources.limits.memory" }}
+              {{ helmValue "if eq .Values.modelRunner.gpu.vendor \"nvidia\"" }}nvidia.com/gpu{{ helmValue "else" }}amd.com/gpu{{ helmValue "end" }}: {{ helmValue "if .Values.modelRunner.gpu.enabled" }}{{ helmValue ".Values.modelRunner.gpu.count" }}{{ helmValue "else" }}0{{ helmValue "end" }}
             requests:
               cpu: {{ helmValue ".Values.modelRunner.resources.requests.cpu" }}
               memory: {{ helmValue ".Values.modelRunner.resources.requests.memory" }}
+              {{ helmValue "if eq .Values.modelRunner.gpu.vendor \"nvidia\"" }}nvidia.com/gpu{{ helmValue "else" }}amd.com/gpu{{ helmValue "end" }}: {{ helmValue "if .Values.modelRunner.gpu.enabled" }}{{ helmValue ".Values.modelRunner.gpu.count" }}{{ helmValue "else" }}0{{ helmValue "end" }}
           readinessProbe:
             httpGet:
               path: /engines/status

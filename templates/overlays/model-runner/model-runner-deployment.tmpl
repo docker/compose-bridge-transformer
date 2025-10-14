@@ -26,6 +26,14 @@ spec:
         com.docker.model.runner: "true"
     spec:
       restartPolicy: Always
+      # Uncomment to schedule on specific nodes (e.g., GPU nodes)
+      # nodeSelector:
+      #   accelerator: nvidia-tesla-t4
+      # Uncomment to tolerate tainted nodes
+      # tolerations:
+      # - key: "nvidia.com/gpu"
+      #   operator: "Exists"
+      #   effect: "NoSchedule"
       initContainers:
         - name: fix-permissions
           image: busybox:1.35
@@ -37,6 +45,8 @@ spec:
         - name: model-runner
           image: docker/model-runner:latest
           imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - containerPort: 12434
           volumeMounts:
@@ -46,9 +56,15 @@ spec:
             limits:
               cpu: 1000m
               memory: 2Gi
+              # Uncomment for GPU support (requires device plugin)
+              # nvidia.com/gpu: "1"  # For NVIDIA GPUs
+              # amd.com/gpu: "1"     # For AMD GPUs
             requests:
               cpu: 100m
               memory: 256Mi
+              # Uncomment for GPU support (must match limits)
+              # nvidia.com/gpu: "1"
+              # amd.com/gpu: "1"
           readinessProbe:
             httpGet:
               path: /engines/status
@@ -63,6 +79,7 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 20
             failureThreshold: 3
+        # Model pre-pulling sidecar (comment out to disable)
         - name: model-init
           image: curlimages/curl:8.14.1
           command: ["/bin/sh", "-c"]
@@ -86,8 +103,13 @@ spec:
             mountPath: /config
       volumes:
       - name: model-storage
+        # Default: Persistent storage (survives pod restarts)
         persistentVolumeClaim:
           claimName: model-storage
+        # Alternative: Ephemeral storage (faster startup, lower cost)
+        # Uncomment below and remove persistentVolumeClaim above
+        # emptyDir:
+        #   sizeLimit: 100Gi
       - name: init-config
         configMap:
           name: docker-model-runner-init
