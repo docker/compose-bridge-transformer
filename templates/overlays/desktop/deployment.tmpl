@@ -16,8 +16,13 @@ spec:
         - name: {{ if $service.container_name }}{{ $service.container_name | safe }}{{ else }}{{ $name | safe }}{{ end }}
           env:
 {{ range $key, $value := $service.models }}
-            - name: {{ if $value.endpoint_var }}{{ $value.endpoint_var }}{{ else }}{{ $key | uppercase }}_URL{{ end }}
+{{- if or (isString $value) (not $value) }}
+            - name: {{ if isString $value }}{{ $value | uppercase }}{{ else }}{{ $key | uppercase }}{{ end }}_URL
               value: "http://host.docker.internal:12434/engines/v1/"
+{{- else }}
+            - name: {{ if hasAttribute $value "endpoint_var" }}{{ getAttribute $value "endpoint_var" }}{{ else }}{{ $key | uppercase }}_URL{{ end }}
+              value: "http://host.docker.internal:12434/engines/v1/"
+{{- end }}
 {{ end }}
 {{ end }}
 {{ end }}

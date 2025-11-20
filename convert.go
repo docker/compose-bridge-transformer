@@ -159,6 +159,31 @@ var helpers = map[string]any{
 	"helmValue": func(s string, args ...any) string {
 		return fmt.Sprintf("⌦ %s ⌫", fmt.Sprintf(s, args...))
 	},
+	"isString": func(v any) bool {
+		_, ok := v.(string)
+		return ok
+	},
+	"hasAttribute": func(m any, attribute string) bool {
+		if m == nil {
+			return false
+		}
+		mapValue, ok := m.(map[string]any)
+		if !ok {
+			return false
+		}
+		_, exists := mapValue[attribute]
+		return exists
+	},
+	"getAttribute": func(m any, attribute string) any {
+		if m == nil {
+			return nil
+		}
+		mapValue, ok := m.(map[string]any)
+		if !ok {
+			return nil
+		}
+		return mapValue[attribute]
+	},
 	"required": func(attr string, a any) any {
 		if a != nil {
 			return a
