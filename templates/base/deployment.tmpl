@@ -210,6 +210,10 @@ spec:
 {{ else if eq $volume.type "bind" }}
           hostPath:
             path: {{ $volume.source }}
+{{ else if eq $volume.type "image" }}            
+          image:
+            reference: {{ $volume.source }}
+            pullPolicy: IfNotPresent
 {{ else if eq $volume.type "tmpfs" }}
           emptyDir:
 {{ if $volume.tmpfs.size }}
