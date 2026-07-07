@@ -1,0 +1,8 @@
+.github
+.idea
+.claude
+CLAUDE.md
+README.md
+LICENSE
+Dockerfile
+docker-bake.hcl
